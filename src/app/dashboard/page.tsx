@@ -133,11 +133,11 @@ export default function Dashboard() {
       } else {
         // Session expired
         localStorage.removeItem('userSession');
-        router.push('/login');
+        router.replace('/login');
         return;
       }
     } else {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
 

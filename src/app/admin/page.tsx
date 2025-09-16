@@ -66,7 +66,7 @@ export default function AdminDashboard() {
     const checkAuth = () => {
       const sessionData = localStorage.getItem('adminSession');
       if (!sessionData) {
-        router.push('/admin/login');
+        router.replace('/admin/login');
         return;
       }
 
@@ -74,12 +74,12 @@ export default function AdminDashboard() {
         const session: AdminSession = JSON.parse(sessionData);
         if (Date.now() > session.expiresAt) {
           localStorage.removeItem('adminSession');
-          router.push('/admin/login');
+          router.replace('/admin/login');
           return;
         }
         setIsAuthenticated(true);
       } catch {
-        router.push('/admin/login');
+        router.replace('/admin/login');
         return;
       }
     };
