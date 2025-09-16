@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Check, Shield, Clock, RefreshCw, ArrowLeft } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -231,6 +232,21 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Direct Whop purchase link */}
+        <div className="mt-8 text-center border-t border-gray-800 pt-6">
+          <p className="text-sm text-gray-400 mb-2">
+            Or you can purchase directly on Whop:
+          </p>
+          <Link
+            href="https://whop.com/byteboost-aca/byteboost-member/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 underline text-sm transition-colors"
+          >
+            Purchase on Whop →
+          </Link>
         </div>
       </main>
 
