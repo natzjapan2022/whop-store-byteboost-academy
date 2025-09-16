@@ -119,14 +119,42 @@ export default function Dashboard() {
   const router = useRouter();
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [overallProgress, setOverallProgress] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check authentication
+    const session = localStorage.getItem('userSession');
+    if (session) {
+      const sessionData = JSON.parse(session);
+      const now = Date.now();
+
+      if (sessionData.expiresAt > now) {
+        setIsAuthenticated(true);
+      } else {
+        // Session expired
+        localStorage.removeItem('userSession');
+        router.push('/login');
+        return;
+      }
+    } else {
+      router.push('/login');
+      return;
+    }
+
     // Calculate overall progress
     const totalLessons = courseModules.reduce((acc, module) => acc + module.lessons.length, 0);
     const completedLessons = courseModules.reduce((acc, module) =>
       acc + module.lessons.filter(lesson => lesson.completed).length, 0);
     setOverallProgress(Math.round((completedLessons / totalLessons) * 100));
-  }, []);
+  }, [router]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {

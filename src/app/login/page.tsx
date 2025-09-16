@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import Header from '@/components/Header';
@@ -8,6 +9,7 @@ import Footer from '@/components/Footer';
 import Logo from '@/components/Logo';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,11 +23,26 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      setError('Invalid email or password. Please check your credentials or purchase access to continue.');
-    }, 1000);
+    // Use same credentials as admin but in email format
+    const validEmail = 'whop_admin_2024@byteboost.site';
+    const validPassword = 'WhopSecure2024Admin';
+
+    if (formData.email === validEmail && formData.password === validPassword) {
+      // Store user session
+      const session = {
+        email: formData.email,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+      };
+
+      localStorage.setItem('userSession', JSON.stringify(session));
+      router.push('/dashboard');
+    } else {
+      setTimeout(() => {
+        setIsLoading(false);
+        setError('Invalid email or password. Please check your credentials or purchase access to continue.');
+      }, 1000);
+    }
   };
 
   return (
