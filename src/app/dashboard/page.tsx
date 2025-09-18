@@ -241,12 +241,12 @@ export default function Dashboard() {
         {/* Course Content */}
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="space-y-8">
+            <h2 className="text-2xl font-bold gradient-text mb-6">
+              Course Modules
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Module List */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold gradient-text mb-6">
-                  Course Modules
-                </h2>
+              <div className="lg:col-span-2 space-y-6">
 
                 {modules.map((module, index) => (
                   <div
@@ -329,6 +329,111 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Quick Stats */}
+                <div className="glass-effect p-6 rounded-xl">
+                  <h3 className="text-lg font-bold text-white mb-4">Your Stats</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Lessons Completed</span>
+                      <span className="text-white font-semibold">{completedLessonsCount}/{totalLessonsCount}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Projects Built</span>
+                      <span className="text-white font-semibold">{courseModules.filter(m => m.lessons.some(l => l.type === 'project')).reduce((acc, module) => {
+                        const progress = getProgress()[module.id] || {};
+                        return acc + module.lessons.filter(l => l.type === 'project' && progress[l.id] === true).length;
+                      }, 0)}/{courseModules.reduce((acc, m) => acc + m.lessons.filter(l => l.type === 'project').length, 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Streak</span>
+                      <span className="text-white font-semibold">🔥 {Math.max(1, Math.min(7, Math.floor(completedLessonsCount / 3) + 1))} {Math.max(1, Math.min(7, Math.floor(completedLessonsCount / 3) + 1)) === 1 ? 'day' : 'days'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Activity */}
+                <div className="glass-effect p-6 rounded-xl">
+                  <h3 className="text-lg font-bold text-white mb-4">Recent Activity</h3>
+                  <div className="space-y-3">
+                    {(() => {
+                      const progress = getProgress();
+                      const recentActivities = [];
+
+                      // Get completed lessons from progress
+                      Object.keys(progress).forEach(moduleId => {
+                        const moduleProgress = progress[moduleId];
+                        const courseModule = courseModules.find(m => m.id === moduleId);
+                        if (courseModule) {
+                          Object.keys(moduleProgress).forEach(lessonId => {
+                            if (moduleProgress[lessonId] === true) {
+                              const lesson = courseModule.lessons.find(l => l.id === lessonId);
+                              if (lesson) {
+                                recentActivities.push({
+                                  type: 'completed',
+                                  icon: <CheckCircle className="w-4 h-4 text-green-400" />,
+                                  text: `Completed "${lesson.title}"`
+                                });
+                              }
+                            }
+                          });
+                        }
+                      });
+
+                      // Add some dynamic activities based on progress
+                      if (overallProgress >= 20) {
+                        recentActivities.unshift({
+                          type: 'unlocked',
+                          icon: <Trophy className="w-4 h-4 text-yellow-400" />,
+                          text: "Unlocked DOM Module"
+                        });
+                      }
+
+                      if (completedLessonsCount > 0) {
+                        const lastCompletedModule = modules.find(m => m.lessons.some(l => l.completed));
+                        if (lastCompletedModule) {
+                          const inProgressLesson = lastCompletedModule.lessons.find(l => !l.completed && !l.locked);
+                          if (inProgressLesson) {
+                            recentActivities.unshift({
+                              type: 'started',
+                              icon: <PlayCircle className="w-4 h-4 text-blue-400" />,
+                              text: `Started "${inProgressLesson.title}"`
+                            });
+                          }
+                        }
+                      }
+
+                      return recentActivities.slice(0, 3).map((activity, index) => (
+                        <div key={index} className="flex items-center space-x-3">
+                          {activity.icon}
+                          <span className="text-sm text-gray-300">{activity.text}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Resources */}
+                <div className="glass-effect p-6 rounded-xl">
+                  <h3 className="text-lg font-bold text-white mb-4">Resources</h3>
+                  <div className="space-y-3">
+                    <button className="w-full flex items-center space-x-3 text-left text-gray-300 hover:text-white transition-colors">
+                      <Download className="w-4 h-4" />
+                      <span className="text-sm">Course Materials</span>
+                    </button>
+                    <button className="w-full flex items-center space-x-3 text-left text-gray-300 hover:text-white transition-colors">
+                      <MessageSquare className="w-4 h-4" />
+                      <span className="text-sm">Community Forum</span>
+                    </button>
+                    <button className="w-full flex items-center space-x-3 text-left text-gray-300 hover:text-white transition-colors">
+                      <Code className="w-4 h-4" />
+                      <span className="text-sm">Code Playground</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
