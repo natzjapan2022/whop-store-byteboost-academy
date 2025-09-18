@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import DashboardHeader from "@/components/DashboardHeader";
+import LessonViewer from "@/components/LessonViewer";
 import {
   PlayCircle,
   Clock,
@@ -16,114 +16,35 @@ import {
   Download,
   MessageSquare,
   Lock,
-  ChevronRight
-} from 'lucide-react';
-
-interface Lesson {
-  id: string;
-  title: string;
-  duration: string;
-  completed: boolean;
-  locked: boolean;
-  type: 'video' | 'text' | 'quiz' | 'project';
-}
-
-interface Module {
-  id: string;
-  title: string;
-  description: string;
-  progress: number;
-  lessons: Lesson[];
-  unlocked: boolean;
-}
-
-const courseModules: Module[] = [
-  {
-    id: 'fundamentals',
-    title: 'JavaScript Fundamentals',
-    description: 'Master the core concepts of JavaScript programming',
-    progress: 85,
-    unlocked: true,
-    lessons: [
-      { id: '1', title: 'Variables and Data Types', duration: '12 min', completed: true, locked: false, type: 'video' },
-      { id: '2', title: 'Functions and Scope', duration: '18 min', completed: true, locked: false, type: 'video' },
-      { id: '3', title: 'Objects and Arrays', duration: '22 min', completed: true, locked: false, type: 'video' },
-      { id: '4', title: 'Control Structures', duration: '15 min', completed: true, locked: false, type: 'video' },
-      { id: '5', title: 'Error Handling', duration: '16 min', completed: false, locked: false, type: 'video' },
-      { id: '6', title: 'Practice: Building a Calculator', duration: '45 min', completed: false, locked: false, type: 'project' }
-    ]
-  },
-  {
-    id: 'dom',
-    title: 'DOM Manipulation & Events',
-    description: 'Learn to interact with web pages dynamically',
-    progress: 60,
-    unlocked: true,
-    lessons: [
-      { id: '7', title: 'Understanding the DOM', duration: '20 min', completed: true, locked: false, type: 'video' },
-      { id: '8', title: 'Selecting Elements', duration: '14 min', completed: true, locked: false, type: 'video' },
-      { id: '9', title: 'Event Listeners', duration: '25 min', completed: true, locked: false, type: 'video' },
-      { id: '10', title: 'Dynamic Content Creation', duration: '18 min', completed: false, locked: false, type: 'video' },
-      { id: '11', title: 'Form Validation', duration: '30 min', completed: false, locked: false, type: 'video' },
-      { id: '12', title: 'Project: Interactive To-Do App', duration: '60 min', completed: false, locked: false, type: 'project' }
-    ]
-  },
-  {
-    id: 'async',
-    title: 'Async Programming & APIs',
-    description: 'Handle asynchronous operations and external data',
-    progress: 20,
-    unlocked: true,
-    lessons: [
-      { id: '13', title: 'Promises and Async/Await', duration: '28 min', completed: true, locked: false, type: 'video' },
-      { id: '14', title: 'Fetch API Basics', duration: '22 min', completed: false, locked: false, type: 'video' },
-      { id: '15', title: 'Error Handling in Async Code', duration: '16 min', completed: false, locked: false, type: 'video' },
-      { id: '16', title: 'Working with JSON', duration: '18 min', completed: false, locked: false, type: 'video' },
-      { id: '17', title: 'REST API Integration', duration: '35 min', completed: false, locked: false, type: 'video' },
-      { id: '18', title: 'Project: Weather Dashboard', duration: '90 min', completed: false, locked: false, type: 'project' }
-    ]
-  },
-  {
-    id: 'react',
-    title: 'React Framework',
-    description: 'Build modern user interfaces with React',
-    progress: 0,
-    unlocked: false,
-    lessons: [
-      { id: '19', title: 'Introduction to React', duration: '25 min', completed: false, locked: true, type: 'video' },
-      { id: '20', title: 'Components and JSX', duration: '30 min', completed: false, locked: true, type: 'video' },
-      { id: '21', title: 'State and Props', duration: '35 min', completed: false, locked: true, type: 'video' },
-      { id: '22', title: 'Hooks Deep Dive', duration: '40 min', completed: false, locked: true, type: 'video' },
-      { id: '23', title: 'Context API', duration: '28 min', completed: false, locked: true, type: 'video' },
-      { id: '24', title: 'Final Project: E-commerce App', duration: '120 min', completed: false, locked: true, type: 'project' }
-    ]
-  },
-  {
-    id: 'advanced',
-    title: 'Advanced Concepts',
-    description: 'Master advanced JavaScript and modern development',
-    progress: 0,
-    unlocked: false,
-    lessons: [
-      { id: '25', title: 'ES6+ Features', duration: '32 min', completed: false, locked: true, type: 'video' },
-      { id: '26', title: 'Module Systems', duration: '24 min', completed: false, locked: true, type: 'video' },
-      { id: '27', title: 'Testing with Jest', duration: '45 min', completed: false, locked: true, type: 'video' },
-      { id: '28', title: 'Build Tools & Webpack', duration: '38 min', completed: false, locked: true, type: 'video' },
-      { id: '29', title: 'Performance Optimization', duration: '30 min', completed: false, locked: true, type: 'video' },
-      { id: '30', title: 'Capstone Project', duration: '180 min', completed: false, locked: true, type: 'project' }
-    ]
-  }
-];
+  ChevronRight,
+  Info,
+  Sparkles,
+} from "lucide-react";
+import {
+  courseModules,
+  getProgress,
+  getModuleProgress,
+  getOverallProgress,
+  isModuleUnlocked,
+  saveProgress,
+  type Module,
+  type Lesson,
+} from "@/data/courseData";
 
 export default function Dashboard() {
   const router = useRouter();
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [modules, setModules] = useState<Module[]>(courseModules);
   const [overallProgress, setOverallProgress] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [totalStudents] = useState(5);
+  const [completedLessonsCount, setCompletedLessonsCount] = useState(0);
+  const [totalLessonsCount, setTotalLessonsCount] = useState(0);
 
   useEffect(() => {
     // Check authentication
-    const session = localStorage.getItem('userSession');
+    const session = localStorage.getItem("userSession");
     if (session) {
       const sessionData = JSON.parse(session);
       const now = Date.now();
@@ -132,21 +53,84 @@ export default function Dashboard() {
         setIsAuthenticated(true);
       } else {
         // Session expired
-        localStorage.removeItem('userSession');
-        router.replace('/login');
+        localStorage.removeItem("userSession");
+        router.replace("/login");
         return;
       }
     } else {
-      router.replace('/login');
+      router.replace("/login");
       return;
     }
 
-    // Calculate overall progress
-    const totalLessons = courseModules.reduce((acc, module) => acc + module.lessons.length, 0);
-    const completedLessons = courseModules.reduce((acc, module) =>
-      acc + module.lessons.filter(lesson => lesson.completed).length, 0);
-    setOverallProgress(Math.round((completedLessons / totalLessons) * 100));
+    // Load progress and update modules
+    loadProgress();
   }, [router]);
+
+  const loadProgress = () => {
+    const progress = getProgress();
+
+    // Update modules with current progress and unlock status
+    const updatedModules = courseModules.map((module, index) => {
+      const moduleProgress = progress[module.id] || {};
+
+      // Update lessons with completion status
+      const updatedLessons = module.lessons.map((lesson) => ({
+        ...lesson,
+        completed: moduleProgress[lesson.id] === true,
+        locked: index === 0 ? false : !isModuleUnlocked(index, courseModules),
+      }));
+
+      return {
+        ...module,
+        lessons: updatedLessons,
+        progress: getModuleProgress(module.id, module.lessons),
+        unlocked: isModuleUnlocked(index, courseModules),
+      };
+    });
+
+    setModules(updatedModules);
+
+    // Calculate overall progress
+    const overall = getOverallProgress(courseModules);
+    setOverallProgress(overall);
+
+    // Calculate lesson counts
+    const totalLessons = courseModules.reduce(
+      (acc, module) => acc + module.lessons.length,
+      0
+    );
+    let completedLessons = 0;
+
+    courseModules.forEach((module) => {
+      const moduleProgress = progress[module.id] || {};
+      completedLessons += module.lessons.filter(
+        (lesson) => moduleProgress[lesson.id] === true
+      ).length;
+    });
+
+    setTotalLessonsCount(totalLessons);
+    setCompletedLessonsCount(completedLessons);
+  };
+
+  const handleLessonComplete = (lessonId: string) => {
+    loadProgress(); // Reload progress to update UI
+  };
+
+  const handleLessonClick = (lesson: Lesson, moduleId: string) => {
+    console.log("Lesson clicked:", lesson.title, "Locked:", lesson.locked);
+    if (lesson.locked) return;
+
+    // Update lesson with module context and store moduleId
+    const moduleProgress = getProgress()[moduleId] || {};
+    const updatedLesson = {
+      ...lesson,
+      completed: moduleProgress[lesson.id] === true,
+    };
+
+    // Store the current module ID for the lesson viewer
+    setSelectedModule(modules.find((m) => m.id === moduleId) || null);
+    setSelectedLesson(updatedLesson);
+  };
 
   if (!isAuthenticated) {
     return (
@@ -156,19 +140,29 @@ export default function Dashboard() {
     );
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video': return <PlayCircle className="w-4 h-4" />;
-      case 'text': return <BookOpen className="w-4 h-4" />;
-      case 'quiz': return <MessageSquare className="w-4 h-4" />;
-      case 'project': return <Code className="w-4 h-4" />;
-      default: return <PlayCircle className="w-4 h-4" />;
+  const getTypeIcon = (lesson: Lesson) => {
+    switch (lesson.type) {
+      case "video":
+        // Show different icon based on video availability
+        if (lesson.content.videoUrl) {
+          return <PlayCircle className="w-4 h-4 text-green-400" />;
+        } else {
+          return <PlayCircle className="w-4 h-4 text-gray-400" />;
+        }
+      case "text":
+        return <BookOpen className="w-4 h-4" />;
+      case "quiz":
+        return <MessageSquare className="w-4 h-4" />;
+      case "project":
+        return <Code className="w-4 h-4" />;
+      default:
+        return <PlayCircle className="w-4 h-4" />;
     }
   };
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <DashboardHeader />
 
       <main className="pt-20 pb-16">
         {/* Dashboard Header */}
@@ -176,18 +170,21 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
               <div className="md:col-span-2">
-                <h1 className="text-4xl font-bold mb-4">Welcome back to Byteboost Academy!</h1>
+                <h1 className="text-4xl font-bold mb-4">
+                  Welcome back to Byteboost Academy!
+                </h1>
                 <p className="text-xl text-blue-100 mb-6">
-                  Continue your journey to becoming a full-stack JavaScript developer
+                  Continue your journey to becoming a full-stack JavaScript
+                  developer
                 </p>
                 <div className="flex items-center space-x-6">
                   <div className="flex items-center space-x-2">
                     <Trophy className="w-5 h-5 text-yellow-300" />
-                    <span className="font-semibold">Level 2 Developer</span>
+                    <span className="font-semibold">Level 1 Developer</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Users className="w-5 h-5 text-blue-200" />
-                    <span>847 students</span>
+                    <span>{totalStudents} students</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Star className="w-5 h-5 text-yellow-300" />
@@ -205,7 +202,36 @@ export default function Dashboard() {
                       style={{ width: `${overallProgress}%` }}
                     ></div>
                   </div>
-                  <span className="text-2xl font-bold mt-3 block">{overallProgress}% Complete</span>
+                  <span className="text-2xl font-bold mt-3 block">
+                    {overallProgress}% Complete
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Course Update Alert */}
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="glass-effect bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-blue-400" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white mb-2">🚀 More Content Coming Soon!</h3>
+                  <p className="text-blue-100 text-sm">
+                    We&apos;re constantly updating our course content with new lessons, projects, and advanced topics.
+                    Stay tuned for exciting updates including Node.js, databases, and full-stack development!
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="animate-pulse">
+                    <Info className="w-5 h-5 text-blue-400" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -215,33 +241,62 @@ export default function Dashboard() {
         {/* Course Content */}
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+            <div className="space-y-8">
               {/* Module List */}
-              <div className="lg:col-span-2 space-y-6">
-                <h2 className="text-2xl font-bold gradient-text mb-6">Course Modules</h2>
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold gradient-text mb-6">
+                  Course Modules
+                </h2>
 
-                {courseModules.map((module, index) => (
+                {modules.map((module, index) => (
                   <div
                     key={module.id}
                     className={`glass-effect p-6 rounded-xl border transition-all duration-300 ${
                       module.unlocked
-                        ? 'cursor-pointer hover:border-blue-400 border-gray-200'
-                        : 'opacity-60 border-gray-300'
+                        ? "cursor-pointer hover:border-blue-400 border-gray-200"
+                        : "opacity-60 border-gray-300"
                     }`}
-                    onClick={() => module.unlocked && setSelectedModule(module)}
+                    onClick={() => {
+                      console.log(
+                        "Module clicked:",
+                        module.title,
+                        "Unlocked:",
+                        module.unlocked
+                      );
+                      if (module.unlocked) {
+                        setSelectedModule(module);
+                        // Scroll to the selected module details section
+                        setTimeout(() => {
+                          const moduleDetailsElement = document.getElementById('selected-module-details');
+                          if (moduleDetailsElement) {
+                            moduleDetailsElement.scrollIntoView({
+                              behavior: 'smooth',
+                              block: 'start'
+                            });
+                          }
+                        }, 100);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          module.unlocked
-                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                            : 'bg-gray-300 text-gray-600'
-                        }`}>
-                          {module.unlocked ? (index + 1) : <Lock className="w-5 h-5" />}
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            module.unlocked
+                              ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
+                              : "bg-gray-300 text-gray-600"
+                          }`}
+                        >
+                          {module.unlocked ? (
+                            index + 1
+                          ) : (
+                            <Lock className="w-5 h-5" />
+                          )}
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-white">{module.title}</h3>
+                          <h3 className="text-xl font-bold text-white">
+                            {module.title}
+                          </h3>
                           <p className="text-gray-300">{module.description}</p>
                         </div>
                       </div>
@@ -256,7 +311,8 @@ export default function Dashboard() {
                           {module.lessons.length} lessons
                         </span>
                         <span className="text-sm text-gray-400">
-                          {module.lessons.filter(l => l.completed).length} completed
+                          {module.lessons.filter((l) => l.completed).length}{" "}
+                          completed
                         </span>
                       </div>
                       <div className="flex items-center space-x-3">
@@ -266,85 +322,27 @@ export default function Dashboard() {
                             style={{ width: `${module.progress}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm font-medium text-gray-300">{module.progress}%</span>
+                        <span className="text-sm font-medium text-gray-300">
+                          {module.progress}%
+                        </span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6">
-                {/* Quick Stats */}
-                <div className="glass-effect p-6 rounded-xl">
-                  <h3 className="text-lg font-bold text-white mb-4">Your Stats</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Lessons Completed</span>
-                      <span className="text-white font-semibold">18/30</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Projects Built</span>
-                      <span className="text-white font-semibold">2/6</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Total Watch Time</span>
-                      <span className="text-white font-semibold">8h 32m</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Streak</span>
-                      <span className="text-white font-semibold">🔥 7 days</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recent Activity */}
-                <div className="glass-effect p-6 rounded-xl">
-                  <h3 className="text-lg font-bold text-white mb-4">Recent Activity</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-sm text-gray-300">Completed "Event Listeners"</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <PlayCircle className="w-4 h-4 text-blue-400" />
-                      <span className="text-sm text-gray-300">Started "Dynamic Content"</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Trophy className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm text-gray-300">Unlocked DOM Module</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Resources */}
-                <div className="glass-effect p-6 rounded-xl">
-                  <h3 className="text-lg font-bold text-white mb-4">Resources</h3>
-                  <div className="space-y-3">
-                    <button className="w-full flex items-center space-x-3 text-left text-gray-300 hover:text-white transition-colors">
-                      <Download className="w-4 h-4" />
-                      <span className="text-sm">Course Materials</span>
-                    </button>
-                    <button className="w-full flex items-center space-x-3 text-left text-gray-300 hover:text-white transition-colors">
-                      <MessageSquare className="w-4 h-4" />
-                      <span className="text-sm">Community Forum</span>
-                    </button>
-                    <button className="w-full flex items-center space-x-3 text-left text-gray-300 hover:text-white transition-colors">
-                      <Code className="w-4 h-4" />
-                      <span className="text-sm">Code Playground</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Selected Module Details */}
             {selectedModule && (
-              <div className="mt-12 glass-effect p-8 rounded-xl">
+              <div id="selected-module-details" className="mt-12 glass-effect p-8 rounded-xl">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{selectedModule.title}</h3>
-                    <p className="text-gray-300">{selectedModule.description}</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">
+                      {selectedModule.title}
+                    </h3>
+                    <p className="text-gray-300">
+                      {selectedModule.description}
+                    </p>
                   </div>
                   <button
                     onClick={() => setSelectedModule(null)}
@@ -358,12 +356,15 @@ export default function Dashboard() {
                   {selectedModule.lessons.map((lesson) => (
                     <div
                       key={lesson.id}
+                      onClick={() =>
+                        handleLessonClick(lesson, selectedModule.id)
+                      }
                       className={`p-4 rounded-lg border transition-all ${
                         lesson.locked
-                          ? 'bg-gray-800 border-gray-700 opacity-50'
+                          ? "bg-gray-800 border-gray-700 opacity-50"
                           : lesson.completed
-                          ? 'bg-green-900/20 border-green-500/30'
-                          : 'bg-gray-800/50 border-gray-600 hover:border-blue-400 cursor-pointer'
+                          ? "bg-green-900/20 border-green-500/30 cursor-pointer hover:border-green-400"
+                          : "bg-gray-800/50 border-gray-600 hover:border-blue-400 cursor-pointer"
                       }`}
                     >
                       <div className="flex items-center space-x-3 mb-2">
@@ -372,27 +373,33 @@ export default function Dashboard() {
                         ) : lesson.completed ? (
                           <CheckCircle className="w-4 h-4 text-green-400" />
                         ) : (
-                          getTypeIcon(lesson.type)
+                          getTypeIcon(lesson)
                         )}
-                        <span className={`font-medium ${
-                          lesson.locked ? 'text-gray-500' : 'text-white'
-                        }`}>
+                        <span
+                          className={`font-medium ${
+                            lesson.locked ? "text-gray-500" : "text-white"
+                          }`}
+                        >
                           {lesson.title}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className={`text-sm ${
-                          lesson.locked ? 'text-gray-600' : 'text-gray-400'
-                        }`}>
+                        <span
+                          className={`text-sm ${
+                            lesson.locked ? "text-gray-600" : "text-gray-400"
+                          }`}
+                        >
                           {lesson.duration}
                         </span>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          lesson.type === 'project'
-                            ? 'bg-purple-900/50 text-purple-300'
-                            : lesson.type === 'quiz'
-                            ? 'bg-orange-900/50 text-orange-300'
-                            : 'bg-blue-900/50 text-blue-300'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            lesson.type === "project"
+                              ? "bg-purple-900/50 text-purple-300"
+                              : lesson.type === "quiz"
+                              ? "bg-orange-900/50 text-orange-300"
+                              : "bg-blue-900/50 text-blue-300"
+                          }`}
+                        >
                           {lesson.type}
                         </span>
                       </div>
@@ -405,7 +412,15 @@ export default function Dashboard() {
         </section>
       </main>
 
-      <Footer />
+      {/* Lesson Viewer Modal */}
+      {selectedLesson && (
+        <LessonViewer
+          lesson={selectedLesson}
+          moduleId={selectedModule?.id || ""}
+          onClose={() => setSelectedLesson(null)}
+          onComplete={handleLessonComplete}
+        />
+      )}
     </div>
   );
 }

@@ -23,11 +23,23 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Use same credentials as admin but in email format
-    const validEmail = 'whop_admin_2024@byteboost.site';
-    const validPassword = 'WhopSecure2024Admin';
+    // Valid credentials for the course
+    const validCredentials = [
+      {
+        email: 'whop_admin_2024@byteboost.site',
+        password: 'WhopSecure2024Admin'
+      },
+      {
+        email: 'leoniemartin2705@gmail.com',
+        password: 'Kx8#mP9$nQ3&vL2@uR7!'
+      }
+    ];
 
-    if (formData.email === validEmail && formData.password === validPassword) {
+    const isValidUser = validCredentials.some(
+      cred => cred.email === formData.email && cred.password === formData.password
+    );
+
+    if (isValidUser) {
       // Store user session
       const session = {
         email: formData.email,
